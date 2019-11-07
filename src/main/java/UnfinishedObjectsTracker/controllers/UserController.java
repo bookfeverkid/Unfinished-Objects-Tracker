@@ -23,10 +23,11 @@ public class UserController {
     public ModelAndView login(){
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("user/login");
+        System.out.println("Does this run?");
         return modelAndView;
     }
 
-//    @RequestMapping(value = {"/submit"}, method = RequestMethod.POST)
+    //    @RequestMapping(value = {"/submit"}, method = RequestMethod.POST)
 //    public ModelAndView userHome(User user) {
 //        System.out.println("NEw User Logged in");
 //        ModelAndView modelAndView = new ModelAndView();
@@ -43,7 +44,7 @@ public class UserController {
         System.out.println(user);
         //modelAndView.addObject("userName", "Welcome " + user.getName() + " " + user.getLastName() + " (" + user.getEmail() + ")");
         modelAndView.addObject("adminMessage","Content Available Only for Users with Admin Role");
-        modelAndView.setViewName("ufo/home");
+        modelAndView.setViewName("project/home");
         return modelAndView;
     }
 
@@ -66,7 +67,7 @@ public class UserController {
                     .rejectValue("email", "error.user",
                             "There is already a user registered with the username provided");
         }
-                if (emailExists != null) {
+        if (emailExists != null) {
             bindingResult
                     .rejectValue("email", "error.user",
                             "There is already a user registered with the email provided");
