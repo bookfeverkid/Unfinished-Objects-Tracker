@@ -14,7 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.validation.Valid;
 
 @Controller
-public class LoginController {
+public class UserController {
 
     @Autowired
     private UserService userService;
@@ -23,7 +23,6 @@ public class LoginController {
     public ModelAndView login(){
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("user/login");
-        System.out.println("Does this run?");
         return modelAndView;
     }
 
