@@ -95,8 +95,12 @@ public class ProjectController {
                 Project thisProject = projectDao.save(newProject);
                 System.out.println("this is the project id " + thisProject.getId());
                 projectDao.saveLink(thisUser,thisProject.getId());
-
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                User user = userService.findUserByEmail(auth.getName());
+                ArrayList<Project> userProjects = projectDao.listProjectsByUser(user.getId());
                 modelAndView.addObject("project", new Project());
+                modelAndView.addObject("WelcomeMessage",  user.getUsername() + "'s Projects");
+                modelAndView.addObject("userProjects", projectDao.listProjectsByUser(user.getId()));
                 modelAndView.setViewName("project/home");
             } else {
                 System.out.println("No user found so going to new again");
