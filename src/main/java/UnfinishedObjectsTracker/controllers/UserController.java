@@ -3,8 +3,6 @@ package UnfinishedObjectsTracker.controllers;
 import UnfinishedObjectsTracker.models.User;
 import UnfinishedObjectsTracker.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
+import java.util.logging.Logger;
 
 @Controller
 public class UserController {
@@ -19,11 +18,12 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    private Logger log = Logger.getLogger(UserController.class.getName());
+
     @RequestMapping(value={"/", "/login"}, method = RequestMethod.GET)
     public ModelAndView login(){
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("user/login");
-        System.out.println("Does this run?");
         return modelAndView;
     }
 
@@ -36,17 +36,7 @@ public class UserController {
 //        modelAndView.setViewName("ufo/home");
 //        return modelAndView;
 //    }
-    @RequestMapping(value="/home", method = RequestMethod.GET)
-    public ModelAndView home(){
-        ModelAndView modelAndView = new ModelAndView();
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = userService.findUserByEmail(auth.getName());
-        System.out.println(user);
-        //modelAndView.addObject("userName", "Welcome " + user.getName() + " " + user.getLastName() + " (" + user.getEmail() + ")");
-        modelAndView.addObject("adminMessage","Content Available Only for Users with Admin Role");
-        modelAndView.setViewName("project/home");
-        return modelAndView;
-    }
+
 
     @RequestMapping(value="/registration", method = RequestMethod.GET)
     public ModelAndView viewRegistrationForm(){

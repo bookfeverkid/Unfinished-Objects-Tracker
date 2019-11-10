@@ -8,9 +8,41 @@
 </head>
 <body class="container">
 <h1 th:text="${title}">Default Title</h1>
-<a href="/logout"> Log Out </a> |
 
-<p>Welcome to UFO.</p>
+<nav>
+     |<a href="/logout"> Log Out </a> |
+    <a href="/new">Create New Project</a> |
+</nav>
+<div>
+    <h2 th:text="${WelcomeMessage}">Default </h2>
+</div>
+
+
+
+<!--<h3 th:text="${projects}">Default</h3>-->
+<!--<div><h3 th:text="${project.title}">Default</h3></div>-->
+<div><h3 th:text="${NoProjects}">Default </h3></div>
+
+<div><table class="table">
+    <tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Start Date</th>
+        <th>Completion Percentage</th>
+
+    </tr>
+
+    <tr th:each="project : ${userProjects}">
+        <td th:text="${project.title}"></td>
+        <td th:text="${project.description}"></td>
+        <td> Placeholder Date</td>
+        <td> Placeholder %</td>
+    </tr>
+
+</table>
+</div>
+
+
 
 </body>
 </html>
