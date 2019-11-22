@@ -8,11 +8,14 @@
 </head>
 <body class="container">
 <h1 th:text="${title}">Default Title</h1>
-
-<nav>
-     |<a href="/logout"> Log Out </a> |
-    <a href="/new">Create New Project</a> |
+<div>
+    <nav>
+    <a href="/home">Home</a> |
+    |<a href="/new">Create New Project</a> |
+    <a href="/logout"> Log Out </a> |
 </nav>
+</div>
+
 <div>
     <h2 th:text="${WelcomeMessage}">Default </h2>
 </div>
@@ -35,8 +38,10 @@
     <tr th:each="project : ${userProjects}">
         <td th:text="${project.title}"></td>
         <td th:text="${project.description}"></td>
-        <td> Placeholder Date</td>
-        <td> Placeholder %</td>
+        <td th:text="${project.date}"></td>
+        <td th:text="${project.percentComplete}"></td>
+        <td><a th:href="@{/viewproject/{id}(id=${project.id})}"> View Project</a></td>
+
     </tr>
 
 </table>

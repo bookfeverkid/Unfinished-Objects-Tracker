@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org/">
+<head>
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" th:inline="javascript" th:src="@{/js/script.js}"></script>
+</head>
+<body class="container">
+<div>
+    <nav>
+        | <a href="/home">Home</a>|
+        <a href="/new">Create New Project</a> |
+        <a href="/logout"> Log Out </a> |
+    </nav>
+</div>
+
+<div><h2 th:text="${project.title}"></h2></div>
+<div><p th:text="${project.description}"></p></div>
+<div><p th:text="${project.date}"></p></div>
+<div><p th:text="${project.percentComplete}"></p></div>
+
+
+<a th:href="@{/edit/{id}(id=${project.id})}" class="btn btn-primary btn-lg active" role="button">Edit</a>
+<a th:href="@{/delete/{id}(id=${project.id})}" class="btn btn-primary btn-lg active" role="button">Delete</a>
+</body>
+</html>

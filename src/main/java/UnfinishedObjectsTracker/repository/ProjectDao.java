@@ -16,20 +16,49 @@ import java.util.ArrayList;
 public interface ProjectDao extends JpaRepository<Project, Long> {
 
     User findByTitle(String title);
-    Project findById(@Valid Project id);
+    Project findById(int id);
     Project findByDescription(String description);
-
+    /*
+     * This query ties a project to the specified
+     */
     @Transactional
     @Query(value = "INSERT into ownership (user_id, project_id) VALUES ( :userId, :projectId)", nativeQuery = true)
     @Modifying
-    void saveLink(@Param("userId") int userId, @Param("projectId") int projectId);
+    void createNewProject(@Param("userId") int userId, @Param("projectId") int projectId);
 
-    @Query(value="SELECT project.project_id, project.title, project.description " +
+    /*
+     * This query shows the list of projects by user
+     */
+    @Query(value="SELECT project.project_id, project.title, project.description, project.creation_date, project.percent_complete " +
             "FROM project " +
             "INNER JOIN ownership ON(project.project_id = ownership.project_id) " +
             "INNER JOIN user ON(ownership.user_id = user.user_id) " +
             "WHERE user.user_id = :userId", nativeQuery =true)
-    public ArrayList<Project> listProjectsByUser(@Param("userId") int userId);
+    ArrayList<Project> listProjectsByUser(@Param("userId") int userId);
+
+    /*
+     * Updates a project with new information
+     */
+    @Transactional
+    @Query(value="UPDATE project SET project.title = :title,  project.description = :description WHERE project.project_id = :id", nativeQuery =true)
+    @Modifying(clearAutomatically = true)
+    int updateProject(@Param("id") int id, @Param("title")String title, @Param("description")String description);
+
+    /*
+    Deletes a project from the database in project and ownership tables
+     */
+    @Transactional
+    @Modifying
+    @Query(value ="DELETE project, ownership FROM project INNER JOIN  ownership ON project.project_id = ownership.project_id WHERE project.project_id = :id", nativeQuery = true)
+    int deleteProject(@Param("id") int id);
+
+
+
+
+
+
 
 
 }
+
+
