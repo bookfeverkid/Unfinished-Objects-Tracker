@@ -12,25 +12,33 @@
 
 <body>
 <form th:action="@{/registration}" method="get">
-    <button class="btn btn-md btn-warning btn-block" type="Submit">Go To Registration Page</button>
+    <button class="btn btn-md btn-info btn-block" type="Submit">Go To Registration Page</button>
 </form>
 
 <div class="container">
-    <form th:action="@{/login}" method="POST" class="form-signin">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <form th:action="@{/login}" method="POST" class="form-signin">
+                <h2>Welcome to UFO</h2>
+<!--                <h2 class="form-signin-heading">Welcome to UFO</h2>-->
+                <br/>
+                <div class="form-group">
+                <div class="col-sm-9">
+                    <input type="text" id="email" name="email"  th:placeholder="Email"
+                        class="form-control" /> <br/>
+                    <input type="password"  th:placeholder="Password"
+                        id="password" name="password" class="form-control" /> <br />
 
-        <h3 class="form-signin-heading" th:text="Welcome"></h3>
-        <br/>
+                    <div align="center" th:if="${param.error}">
+                        <p style="font-size: 20; color: #FF1C19;">Email or Password invalid, please verify</p>
+                    </div>
 
-        <input type="text" id="email" name="email"  th:placeholder="Email"
-               class="form-control" /> <br/>
-        <input type="password"  th:placeholder="Password"
-               id="password" name="password" class="form-control" /> <br />
-
-        <div align="center" th:if="${param.error}">
-            <p style="font-size: 20; color: #FF1C19;">Email or Password invalid, please verify</p>
+                    <button class="btn btn-lg btn-primary btn-block" name="Submit" value="Login" type="Submit" th:text="Login"></button>
+                </div>
+                </div>
+            </form>
         </div>
-        <button class="btn btn-lg btn-primary btn-block" name="Submit" value="Login" type="Submit" th:text="Login"></button>
-    </form>
+    </div>
 </div>
 </body>
 </html>
