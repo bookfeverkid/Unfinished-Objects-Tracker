@@ -10,42 +10,32 @@
 <h1 th:text="${title}">Default Title</h1>
 <div>
     <nav>
-    <a href="/home">Home</a> |
-    |<a href="/new">Create New Project</a> |
-    <a href="/logout"> Log Out </a> |
-</nav>
+        <a href="/home" class="btn btn-primary btn-sm active" role="button">Home</a>
+        <a href="/new"class="btn btn-primary btn-sm active" role="button">Create New Project</a>
+        <a href="/logout" class="btn btn-primary btn-sm active" role="button"> Log Out </a>
+    </nav>
 </div>
 
 <div>
     <h2 th:text="${WelcomeMessage}">Default </h2>
 </div>
 
-
-
-<!--<h3 th:text="${projects}">Default</h3>-->
-<!--<div><h3 th:text="${project.title}">Default</h3></div>-->
 <div><h3 th:text="${NoProjects}">Default </h3></div>
 
-<div><table class="table">
-    <tr>
-        <th>Title</th>
-        <th>Description</th>
-        <th>Start Date</th>
-        <th>Completion Percentage</th>
 
-    </tr>
 
-    <tr th:each="project : ${userProjects}">
-        <td th:text="${project.title}"></td>
-        <td th:text="${project.description}"></td>
-        <td th:text="${project.date}"></td>
-        <td th:text="${project.percentComplete}"></td>
-        <td><a th:href="@{/viewproject/{id}(id=${project.id})}"> View Project</a></td>
+    <div class="row">
+        <div class="col-md-3" th:each="project : ${userProjects}">
+            <img src="..." alt="image" class="img-thumbnail" max-width="100%">
+        <h3 th:text="${project.title}"></h3>
+        <div th:text="${project.date}"></div>
+        <div th:text="${project.percentComplete}"></div>
+        <a  th:href="@{/viewproject/{id}(id=${project.id})}"class="btn btn-primary btn-xs active" role="button"> View Project</a>
+        <div style="padding:50px;"></div>
+    </div>
+    </div>
 
-    </tr>
 
-</table>
-</div>
 
 
 
