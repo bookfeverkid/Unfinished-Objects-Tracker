@@ -1,11 +1,14 @@
 package UnfinishedObjectsTracker.controllers;
 
+import UnfinishedObjectsTracker.models.Post;
 import UnfinishedObjectsTracker.models.Project;
 import UnfinishedObjectsTracker.models.User;
+import UnfinishedObjectsTracker.repository.PostDao;
 import UnfinishedObjectsTracker.repository.ProjectDao;
 import UnfinishedObjectsTracker.repository.UserDao;
 import UnfinishedObjectsTracker.service.ProjectService;
 import UnfinishedObjectsTracker.service.UserService;
+import com.zaxxer.hikari.metrics.PoolStats;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,12 +38,14 @@ public class ProjectController {
     @Autowired
     private ProjectService projectService;
 
-
     @Autowired
     private ProjectDao projectDao;
 
     @Autowired
     private UserDao userDao;
+
+    @Autowired
+    private PostDao postDao;
 
     private Logger log = Logger.getLogger(ProjectController.class.getName());
 
@@ -93,7 +98,6 @@ public class ProjectController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         User u = userService.findUserByEmail(userDetails.getUsername());
-        //log.info("should return the user ID:" +u.getId());
         int thisUser = u.getId();
         if (bindingResult.hasErrors()) {
             modelAndView.setViewName("project/new");
@@ -107,15 +111,7 @@ public class ProjectController {
                 //project listing
                 Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 ArrayList<Project> userProjects = updateDate(auth);
-//                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//                User user = userService.findUserByEmail(auth.getName());
-//                ArrayList<Project> userProjects = projectDao.listProjectsByUser(user.getId());
-//                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
-//                for(Project p: userProjects) {
-//                    LocalDateTime date = p.getCreationDate();
-//                    p.setDate(date.format(formatter));
-//                }
-//                //add objects to modelAndView
+                //add objects to modelAndView
                 String username= userService.findUserByEmail(auth.getName()).getUsername();
                 modelAndView.addObject("project", new Project());
                 modelAndView.addObject("WelcomeMessage",  username + "'s Projects");
@@ -136,7 +132,11 @@ public class ProjectController {
         Project thisProject = projectDao.findById(id);
         LocalDateTime date = thisProject.getCreationDate();
         thisProject.setDate(date.format(formatter));
+        ArrayList<Post> thesePosts = updatePostDate(thisProject);
+
+        //add objects to modelAndView
         modelAndView.addObject("project", thisProject);
+        modelAndView.addObject("post", thesePosts);
         modelAndView.setViewName("project/viewproject");
         return modelAndView;
     }
@@ -145,36 +145,24 @@ public class ProjectController {
     public ModelAndView displayEditProject(@PathVariable("id") int id){
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("project", projectDao.findById(id));
-        System.out.println(id);
+        //add objects to modelAndView
         modelAndView.setViewName("project/edit");
         return modelAndView;
     }
 
     @RequestMapping(value="/edit/{id}", method = RequestMethod.POST)
-    public ModelAndView processEitProject(@Valid Project project, BindingResult bindingResult) {
+    public ModelAndView processEditProject(@Valid Project project, BindingResult bindingResult) {
         ModelAndView modelAndView = new ModelAndView();
         //Confirm Delete
 
-        //Edit feature
-//        log.info("I am calling the edit feature");
-//        log.info("the project is :" +  project.getTitle());
-//        log.info("the project is :" +  project.getDescription());
-//        log.info("the project is :" +  project.getId());
+        //Edit project feature
         int i = projectDao.updateProject(project.getId(), project.getTitle(), project.getDescription());
-//        log.info("update:" + i);
 
-        //project listing
+        //project listing for homepage
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         ArrayList<Project> userProjects = updateDate(auth);
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        User user = userService.findUserByEmail(auth.getName());
-//        ArrayList<Project> userProjects = projectDao.listProjectsByUser(user.getId());
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
-//        for(Project p: userProjects) {
-//            LocalDateTime date = p.getCreationDate();
-//            p.setDate(date.format(formatter));
-//        }
         String username= userService.findUserByEmail(auth.getName()).getUsername();
+        //add objects to modelAndView
         modelAndView.addObject("WelcomeMessage",  username + "'s Projects");
         modelAndView.addObject("userProjects", userProjects);
         modelAndView.setViewName("project/home");
@@ -185,9 +173,9 @@ public class ProjectController {
     @RequestMapping(value="/delete/{id}", method = RequestMethod.GET)
     public ModelAndView displayDeleteProject(@PathVariable("id") int id){
         ModelAndView modelAndView = new ModelAndView();
+        //add objects to modelAndView
         modelAndView.addObject("Message", "Are you sure you want to delete this project?");
         modelAndView.addObject("project", projectDao.findById(id));
-        System.out.println("delete Get:"+ id);
         modelAndView.setViewName("project/delete");
         return modelAndView;
     }
@@ -196,27 +184,96 @@ public class ProjectController {
         ModelAndView modelAndView = new ModelAndView();
 
         //Delete Project
-        //modelAndView.addObject("show text", " Are you sure you want to delete this project?");
-       log.info("the value that we need to delete" + project.getId());
-        //log.info("This should give the id", + id);
+        int z =postDao.deletePost(project.getId());
         int i =projectDao.deleteProject(project.getId());
-
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         ArrayList<Project> userProjects = updateDate(auth);
-//        User user = userService.findUserByEmail(auth.getName());
-//        ArrayList<Project> userProjects = projectDao.listProjectsByUser(user.getId());
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
-//        for(Project p: userProjects) {
-//            LocalDateTime date = p.getCreationDate();
-//            p.setDate(date.format(formatter));
-//        }
         String username= userService.findUserByEmail(auth.getName()).getUsername();
+        //add objects to modelAndView
         modelAndView.addObject("WelcomeMessage", username  + "'s Projects");
         modelAndView.addObject("userProjects", userProjects);
         modelAndView.setViewName("project/home");
 
         return modelAndView;
     }
+
+
+    @RequestMapping(value="/addpost/{id}", method= RequestMethod.GET)
+    public ModelAndView displayAddPost(@PathVariable("id") int id){
+        log.info("launching add post page" + id);
+        ModelAndView modelAndView = new ModelAndView();
+        //create new project object
+        Post post = new Post();
+        post.setProjectId(id);
+        //add objects to modelAndView
+        modelAndView.addObject("post", post);
+        modelAndView.addObject("title", "Add New Post to Project");
+        modelAndView.setViewName("project/addpost");
+        return modelAndView;
+    }
+
+    @RequestMapping(value="/addpost", method = RequestMethod.POST)
+    public ModelAndView processAddPost(@Valid Post newPost){
+        ModelAndView modelAndView = new ModelAndView();
+
+        //save new post to database
+        Post thisPost = postDao.save(newPost);
+        //postDao.createNewPost(thisPost.getProjectId());
+        log.info("new post project Id  : " + newPost.getProjectId());
+
+        //load homepage
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        ArrayList<Project> userProjects = updateDate(auth);
+//        String username= userService.findUserByEmail(auth.getName()).getUsername();
+
+        //load Project page with new post
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
+        Project thisProject = projectDao.findById(thisPost.getProjectId());
+        LocalDateTime date = thisProject.getCreationDate();
+        thisProject.setDate(date.format(formatter));
+        ArrayList<Post> thesePosts = updatePostDate(thisProject);
+
+        //add objects to modelAndView
+        modelAndView.addObject("project", thisProject);
+        modelAndView.addObject("post", thesePosts);
+        modelAndView.setViewName("project/viewproject");
+        return modelAndView;
+    }
+
+    @RequestMapping(value="/editpost/{id}", method = RequestMethod.GET)
+    public ModelAndView displayEditPost(@PathVariable("id") int id){
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.addObject("post", postDao.findById(id));
+        //add objects to modelAndView
+        modelAndView.setViewName("project/editpost");
+        return modelAndView;
+    }
+
+    @RequestMapping(value="/editpost/{id}", method = RequestMethod.POST)
+    public ModelAndView processEditPost(@Valid Post post, BindingResult bindingResult) {
+        ModelAndView modelAndView = new ModelAndView();
+        //Edit individual post feature
+        int i = postDao.updatePost(post.getId(), post.getTitle(), post.getDescription());
+        //log.info(post.getProjectId());
+        //view project  listing
+        log.info("something" + i);
+        log.info("p" +post.getProjectId());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
+        Project thisProject = projectDao.findById(post.getProjectId());
+        log.info(thisProject.getTitle());
+
+        //LocalDateTime date = thisProject.getCreationDate();
+        //thisProject.setDate(date.format(formatter));
+        ArrayList<Post> somePosts = updatePostDate(thisProject);
+
+        //add objects to modelAndView
+        modelAndView.addObject("project", thisProject);
+        modelAndView.addObject("post", somePosts);
+        modelAndView.setViewName("project/viewproject");
+        return modelAndView;
+    }
+
     public ArrayList<Project> updateDate(Authentication auth) {
         User user = userService.findUserByEmail(auth.getName());
         ArrayList<Project> userProjects = projectDao.listProjectsByUser(user.getId());
@@ -228,5 +285,15 @@ public class ProjectController {
         return userProjects;
     }
 
+    public ArrayList<Post> updatePostDate(Project thisProject) {
+        Project project = projectService.findById(thisProject.getId());
+        ArrayList<Post> post = postDao.listPostsByProjectId(project.getId());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
+        for(Post p: post) {
+            LocalDateTime date = p.getPostDate();
+            p.setpDate(date.format(formatter));
+        }
+        return post;
+    }
 
 }

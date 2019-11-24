@@ -1,5 +1,6 @@
 package UnfinishedObjectsTracker.repository;
 
+import UnfinishedObjectsTracker.models.Post;
 import UnfinishedObjectsTracker.models.Project;
 import UnfinishedObjectsTracker.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,7 +20,7 @@ public interface ProjectDao extends JpaRepository<Project, Long> {
     Project findById(int id);
     Project findByDescription(String description);
     /*
-     * This query ties a project to the specified
+     * This query ties a project to the specified user
      */
     @Transactional
     @Query(value = "INSERT into ownership (user_id, project_id) VALUES ( :userId, :projectId)", nativeQuery = true)
@@ -49,14 +50,11 @@ public interface ProjectDao extends JpaRepository<Project, Long> {
      */
     @Transactional
     @Modifying
-    @Query(value ="DELETE project, ownership FROM project INNER JOIN  ownership ON project.project_id = ownership.project_id WHERE project.project_id = :id", nativeQuery = true)
+    @Query(value ="DELETE project, ownership " +
+            "FROM project INNER JOIN  ownership " +
+            "ON project.project_id = ownership.project_id " +
+            "WHERE project.project_id = :id", nativeQuery = true)
     int deleteProject(@Param("id") int id);
-
-
-
-
-
-
 
 
 }

@@ -44,20 +44,23 @@ public class Project {
     private int percentComplete;
 
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "ownership", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "project_id"))
-    private Set<User> userId;
+//    @ManyToMany(cascade = CascadeType.ALL)
+//    @JoinTable(name = "ownership", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "project_id"))
+//    private Set<User> userId;
 
 
-    public void addItem(User i){userId.add(i);}
+    //public void addItem(User i){userId.add(i);}
+
     @Transient
     private String date;
+
     public Project(){
 
     }
 
-    public Project(int id, @NotEmpty(message = "Please provide a title for your project.")
-    @Size(min = 3, max = 30) String title, @Size(max = 20000) String description, Set<User> users) {
+    public Project(int id,
+                   @NotEmpty(message = "Please provide a title for your project.") @Size(min = 3, max = 30) String title,
+                   @Size(max = 20000) String description, Set<User> users) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -103,9 +106,9 @@ public class Project {
         this.percentComplete = percentComplete;
     }
 
-    public Set<User> getUsers() {
-        return userId;
-    }
+//    public Set<User> getUsers() {
+//        return userId;
+//    }
 
     public String getDate() {
         return date;
@@ -115,7 +118,7 @@ public class Project {
         this.date = date;
     }
 
-    public void setUser(Set<User> users) {
-        this.userId = userId;
-    }
+//    public void setUser(Set<User> users) {
+//        this.userId = userId;
+//    }
 }

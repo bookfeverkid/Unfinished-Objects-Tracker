@@ -21,14 +21,18 @@
 
 <div class="container">
     <div class="row">
-        <form autocomplete="off" action="#" th:action="@{/edit/{id}}"
-              th:object="${project}" method="post" class="form-horizontal" role="form">
+        <form autocomplete="off" action="#" th:action="@{/editpost/{id}}"
+              th:object="${post}" method="post" class="form-horizontal" role="form">
             <h2>Edit Project</h2>
+
+            <h3 th:text="${id}"></h3>
+            <h3 th:text="${post.projectId}"></h3>
+
             <div class="form-group">
                 <div class="col-sm-9">
                     <label th:if="${#fields.hasErrors('title')}" th:errors="*{title}"
                            class="validation-message"></label>
-                    <input type="text" th:field="*{title}" placeholder="Project Title"
+                    <input type="text" th:field="*{title}" placeholder="Post Title"
                            class="form-control" />
                 </div>
             </div>
@@ -37,7 +41,7 @@
                 <div class="col-sm-9">
                     <label th:if="${#fields.hasErrors('description')}" th:errors="*{description}"
                            class="validation-message"></label>
-                    <textarea type="text" th:field="*{description}" placeholder="Project Description"
+                    <textarea type="text" th:field="*{description}" placeholder="Post Description"
                               class="form-control"></textarea>
                 </div>
             </div>
@@ -45,13 +49,14 @@
             <div class="form-group">
                 <div class="col-sm-9">
                     <input type="hidden" name="Id" th:value="*{id}" />
-                    <button type="submit" class="btn btn-primary btn-block">Edit Project</button>
-            </div>
+                    <input type="hidden" name="projectId" th:value="${post.projectId}" />
+                    <button type="submit" class="btn btn-primary btn-block">Edit Post</button>
+                </div>
             </div>
         </form>
 
-        </div>
     </div>
+</div>
 
 </body>
 </html>
