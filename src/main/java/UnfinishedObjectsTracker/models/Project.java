@@ -40,16 +40,9 @@ public class Project {
     private LocalDateTime creationDate;
 
     @Column(name="percent_complete")
+    @Range(min=0, max=100)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int percentComplete;
-
-
-//    @ManyToMany(cascade = CascadeType.ALL)
-//    @JoinTable(name = "ownership", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "project_id"))
-//    private Set<User> userId;
-
-
-    //public void addItem(User i){userId.add(i);}
 
     @Transient
     private String date;
@@ -59,11 +52,13 @@ public class Project {
     }
 
     public Project(int id,
-                   @NotEmpty(message = "Please provide a title for your project.") @Size(min = 3, max = 30) String title,
-                   @Size(max = 20000) String description, Set<User> users) {
+                   @NotEmpty(message = "Please provide a title for your project.") String title,
+                   @Size(max = 20000) String description,
+                   @Range(min = 0, max = 100) int percentComplete) {
         this.id = id;
         this.title = title;
         this.description = description;
+        this.percentComplete = percentComplete;
     }
 
     public int getId() {

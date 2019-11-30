@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Thank you for Logging In to UFO</title>
+    <link rel="stylesheet" type="text/css" href="/css/index.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/script.js"></script>
 </head>
-<body class="container">
+<body class="container" onload="hideorshow()">
 <h1 th:text="${title}">Default Title</h1>
 <div>
     <nav>
@@ -22,7 +24,6 @@
     <div class="row">
         <div class="col-md-6 col-md-offset-3">
             <form autocomplete="off" action="#" th:action="@{/addpost}"
-
                   th:object="${post}" method="post" class="form-horizontal"
                   role="form">
                 <h2>Create a New Project</h2>
@@ -44,6 +45,22 @@
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <div class="col-sm-9">
+                        <div><label>Would you like to update your project's progress?</label></div>
+                        <input type="radio" name="progress" value="Yes" id="radiobuttonid" onclick="hideorshow()"> Yes
+                        <input type="radio" name="progress" value="No" onclick="hideorshow()" checked> No
+                        <div th:object="${project}" id="reveal-if-active">
+                                <label th:if="${#fields.hasErrors('percentComplete')}" th:errors="*{percentComplete}"
+                                       class="validation-message"></label>
+                                <br />
+                                <label type ="text">Percent Complete:  </label>
+                                <input type="text" th:field="*{percentComplete}" placeholder="percentComplete"
+                                       class="form-control">
+                                <input type="hidden" name="Id" th:value="*{id}">
+                        </div>
+                    </div>
+                </div>
 
                 <div class="form-group">
                     <div class="col-sm-9">

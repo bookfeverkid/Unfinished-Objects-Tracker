@@ -36,7 +36,6 @@ public class Post {
     @Transient
     private String pDate;
 
-//    @ManyToOne(cascade = CascadeType.ALL)
     @Column(name="project_id")
     private int projectId;
 

@@ -2,10 +2,10 @@
 <html lang="en" xmlns:th="http://thymeleaf.org/">
 <head>
     <meta charset="UTF-8">
-
+    <link rel="stylesheet" type="text/css" href="/css/index.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-<!--    <script type="text/javascript" th:inline="javascript" th:src="@{/js/script.js}"></script>-->
+    <script type="text/javascript" src="/js/script.js"></script>
 </head>
 <body class="container">
 <div>
@@ -36,39 +36,57 @@
         <p th:text="${project.date}"></p>
     </div>
 </div>
-<div class="row">
-    <div class="col-md-8">
-         <p th:text="${project.percentComplete}"></p>
-    </div>
-</div>
-<a th:href="@{/edit/{id}(id=${project.id})}" class="btn btn-primary btn-xs active" role="button">Edit</a>
-<hr />
-
-
-<div th:each="post : ${post}">
-
-    <div class="row">
-         <h3 th:text="${post.title}"class="col-md-6"></h3>
-    </div>
-    <div class="col-md-8">
-        <img th:src="@{/img/yarn.jpg}" alt="yarn" class="img-thumbnail" max-width="100%">
-    </div>
-    <div class="row">
-        <div class="col-md-8">
-            <p th:text="${post.description}"></p>
+<div class ="row">
+    <div class="col-md-6">
+        <div class="progress">
+            <div id=progressDiv class="progress-bar progress-bar-success progress-bar-striped" role="progressbar"
+                aria-valuemin="0" aria-valuemax="100" th:attr="aria-valuenow=${project.percentComplete}"
+                th:style="'width:'+ ${project.percentComplete}+'%;'" th:text="${project.percentComplete} +'%'">
+            </div>
         </div>
     </div>
+</div>
 <div class="row">
-    <div class="col-md-8">
-        <p th:text="${project.date}"></p>
+    <div class="col-md-6">
+        <a th:href="@{/edit/{id}(id=${project.id})}" class="btn btn-primary btn-xs active" role="button">Edit</a>
     </div>
 </div>
-    <a th:href="@{/editpost/{id}(id=${post.id})}" class="btn btn-primary btn-xs active" role="button">Edit</a>
-    <hr />
+<div style="padding:20px;"></div>
+<div th:each="post : ${post}">
+    <div class="row">
+        <div class="col-md-4">
+         <h3 th:text="${post.title}"></h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <img th:src="@{/img/yarn.jpg}" alt="yarn" class="img-thumbnail" max-width="100%">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+        <p th:text="${post.description}"></p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+        <p th:text="${project.date}"></p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+        <a th:href="@{/editpost/{id}(id=${post.id})}" class="btn btn-primary btn-xs active" role="button">Edit</a>
+    </div>
+    </div>
+    <div style="padding:20px;"></div>
 </div>
-
-
+<div style="padding:50px;"></div>
+<div class="row">
+    <div class="col-md-4">
 <a th:href="@{/delete/{id}(id=${project.id})}" class="btn btn-primary btn-lg active" role="button">Delete Project</a>
 <a th:href="@{/addpost/{id}(id=${project.id})}" class="btn btn-primary btn-lg active" role="button">New Post</a>
+</div>
+</div>
+
 </body>
 </html>

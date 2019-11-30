@@ -45,6 +45,11 @@ public interface ProjectDao extends JpaRepository<Project, Long> {
     @Modifying(clearAutomatically = true)
     int updateProject(@Param("id") int id, @Param("title")String title, @Param("description")String description);
 
+
+    @Transactional
+    @Query(value="UPDATE project SET project.percent_complete = :percentComplete WHERE project.project_id = :id", nativeQuery =true)
+    @Modifying(clearAutomatically = true)
+    int updateProjectProgress(@Param("id") int id, @Param("percentComplete") int percentComplete);
     /*
     Deletes a project from the database in project and ownership tables
      */

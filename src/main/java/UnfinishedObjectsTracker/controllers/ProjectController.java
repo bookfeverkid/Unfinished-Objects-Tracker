@@ -10,6 +10,7 @@ import UnfinishedObjectsTracker.service.ProjectService;
 import UnfinishedObjectsTracker.service.UserService;
 import com.zaxxer.hikari.metrics.PoolStats;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -197,7 +198,6 @@ public class ProjectController {
         return modelAndView;
     }
 
-
     @RequestMapping(value="/addpost/{id}", method= RequestMethod.GET)
     public ModelAndView displayAddPost(@PathVariable("id") int id){
         log.info("launching add post page" + id);
@@ -206,18 +206,22 @@ public class ProjectController {
         Post post = new Post();
         post.setProjectId(id);
         //add objects to modelAndView
+        Project project =projectDao.findById(post.getProjectId());
         modelAndView.addObject("post", post);
+        modelAndView.addObject("project", project);
         modelAndView.addObject("title", "Add New Post to Project");
         modelAndView.setViewName("project/addpost");
         return modelAndView;
     }
 
     @RequestMapping(value="/addpost", method = RequestMethod.POST)
-    public ModelAndView processAddPost(@Valid Post newPost){
+    public ModelAndView processAddPost(@Valid Post newPost, @Valid Project project){
         ModelAndView modelAndView = new ModelAndView();
 
         //save new post to database
         Post thisPost = postDao.save(newPost);
+        projectDao.updateProjectProgress(project.getId(), project.getPercentComplete());
+
         //postDao.createNewPost(thisPost.getProjectId());
         log.info("new post project Id  : " + newPost.getProjectId());
 
@@ -230,6 +234,8 @@ public class ProjectController {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
         Project thisProject = projectDao.findById(thisPost.getProjectId());
+        ////update project progress tracker??
+        ///How can I do this here?
         LocalDateTime date = thisProject.getCreationDate();
         thisProject.setDate(date.format(formatter));
         ArrayList<Post> thesePosts = updatePostDate(thisProject);
@@ -237,6 +243,7 @@ public class ProjectController {
         //add objects to modelAndView
         modelAndView.addObject("project", thisProject);
         modelAndView.addObject("post", thesePosts);
+        modelAndView.addObject("title", "Would you like to Edit your project's progress?");
         modelAndView.setViewName("project/viewproject");
         return modelAndView;
     }
@@ -262,9 +269,6 @@ public class ProjectController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
         Project thisProject = projectDao.findById(post.getProjectId());
         log.info(thisProject.getTitle());
-
-        //LocalDateTime date = thisProject.getCreationDate();
-        //thisProject.setDate(date.format(formatter));
         ArrayList<Post> somePosts = updatePostDate(thisProject);
 
         //add objects to modelAndView
