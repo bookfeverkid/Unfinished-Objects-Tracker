@@ -24,13 +24,12 @@ public class ImageService {
     public Image storeFile(MultipartFile image) {
         // Normalize file name
         String imageName = StringUtils.cleanPath(image.getOriginalFilename());
-
         try {
             // Check if the file's name contains invalid characters
             if(imageName.contains("..")) {
                 throw new FileStorageException("Sorry! Filename contains invalid path sequence " + imageName);
-            }
 
+            }
            Image thisImage = new Image(imageName, image.getContentType(), image.getBytes());
 
             return imageDao.save(thisImage);
@@ -43,4 +42,5 @@ public class ImageService {
         return imageDao.findById(imageId)
                 .orElseThrow(() -> new MyFileNotFoundException("File not found with id " + imageId));
     }
+
 }

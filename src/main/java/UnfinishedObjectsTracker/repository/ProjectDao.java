@@ -45,7 +45,9 @@ public interface ProjectDao extends JpaRepository<Project, Long> {
     @Modifying(clearAutomatically = true)
     int updateProject(@Param("id") int id, @Param("title")String title, @Param("description")String description);
 
-
+    /*
+     * Updates a the project tracker
+     */
     @Transactional
     @Query(value="UPDATE project SET project.percent_complete = :percentComplete WHERE project.project_id = :id", nativeQuery =true)
     @Modifying(clearAutomatically = true)
