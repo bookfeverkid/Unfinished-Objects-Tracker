@@ -3,7 +3,7 @@ package UnfinishedObjectsTracker.models;
 
 //import UnfinishedObjectsTracker.service.LocalDateTimeConverter;
 
-import net.bytebuddy.implementation.bind.annotation.Default;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -13,8 +13,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 //import java.sql.Date;
 //import java.time.LocalDate;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
-import java.util.Set;
 
 @Entity
 @Table(name = "project")
@@ -46,6 +46,12 @@ public class Project {
 
     @Transient
     private String date;
+
+    @Transient
+    private String imageString;
+
+    @Transient
+    private Image image;
 
     public Project(){
 
@@ -116,4 +122,21 @@ public class Project {
 //    public void setUser(Set<User> users) {
 //        this.userId = userId;
 //    }
+
+
+    public String getImageString() {
+        return imageString;
+    }
+
+    public void setImageString(String imageString) {
+        this.imageString = imageString;
+    }
+
+    public Image getImage() {
+        return image;
+    }
+
+    public void setImage(Image image) {
+        this.image = image;
+    }
 }

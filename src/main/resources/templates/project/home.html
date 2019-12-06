@@ -9,9 +9,9 @@
     <script type="text/javascript" src="/js/script.js"></script>
 </head>
 <body class="container">
-<h1 th:text="${title}">Default Title</h1>
 <div>
-    <nav>
+    <nav class="btn btn-md btn-info btn-block">
+        <h1 th:text="${title}">Default Title</h1>
         <a href="/home" class="btn btn-primary btn-sm active" role="button">Home</a>
         <a href="/new"class="btn btn-primary btn-sm active" role="button">Create New Project</a>
         <a href="/logout" class="btn btn-primary btn-sm active" role="button"> Log Out </a>
@@ -27,12 +27,20 @@
 
 
     <div class="row">
+<!--        <div th:each="image : ${userImages}">-->
         <div class="col-md-3" th:each="project : ${userProjects}">
-            <img th:src="@{/img/yarn.jpg}" alt="yarn" class="img-thumbnail" max-width="100%">
+<!--            <img th:attr="src=@{${project.imageString}}" alt="project_photo" class="img-thumbnail" max-width="100%">-->
+            <img th:attr="src=@{${(project.imageString != null && !#strings.isEmpty(project.imageString) ? project.imageString : '/img/yarn.jpg') }}" alt="project_photo" class="img-thumbnail" max-width="100%">
+<!--            <th:block th:each="image : ${project.image}">-->
+<!--                <th:block th:text="${image.imageName}">New Image</th:block>-->
+<!--            <br />-->
+<!--                <th:img th:attr="src='@{data:image/jpeg;base64 + image.imageString}' alt='${image.imageName}'" class="img-thumbnail" max-width="100%"></th:img>-->
+<!--            <th:img th:src="${image} == null ? _ : @{'data:image/png;base64,'+${image}}"></th:img>-->
+
+<!--            </th:block>-->
+<!--            <img th:src="@{/img/yarn.jpg}" alt="yarn" class="img-thumbnail" max-width="100%">-->
             <h3 th:text="${project.title}"></h3>
             <div th:text="${project.date}">
-            </div>
-            <div th:text="${project.percentComplete}">
             </div>
             <div class="progress">
                 <div id=progressDiv class="progress-bar progress-bar-success progress-bar-striped" role="progressbar"

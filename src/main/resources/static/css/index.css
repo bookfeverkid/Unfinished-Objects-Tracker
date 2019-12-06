@@ -1,0 +1,42 @@
+@media screen and (min-width: 500px) {
+    .file-input {
+        width: calc(100% - 115px);
+    }
+
+    .submit-btn {
+        display: inline-block;
+        margin-top: 0;
+        margin-left: 10px;
+    }
+}
+
+.upload-container {
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      background-color: #fff;
+      box-shadow: 0 1px 11px rgba(0, 0, 0, 0.27);
+      margin-top: 60px;
+      min-height: 400px;
+      position: relative;
+      padding: 20px;
+}
+
+.upload-header {
+    border-bottom: 1px solid #ececec;
+}
+
+.upload-header h2 {
+    font-weight: 500;
+}
+
+.single-upload {
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.upload-response {
+    overflow-x: hidden;
+    word-break: break-all;
+}

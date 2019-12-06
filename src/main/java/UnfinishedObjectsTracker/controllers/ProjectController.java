@@ -1,16 +1,18 @@
 package UnfinishedObjectsTracker.controllers;
 
+import UnfinishedObjectsTracker.models.Image;
 import UnfinishedObjectsTracker.models.Post;
 import UnfinishedObjectsTracker.models.Project;
 import UnfinishedObjectsTracker.models.User;
+import UnfinishedObjectsTracker.repository.ImageDao;
 import UnfinishedObjectsTracker.repository.PostDao;
 import UnfinishedObjectsTracker.repository.ProjectDao;
 import UnfinishedObjectsTracker.repository.UserDao;
+import UnfinishedObjectsTracker.service.ImageService;
 import UnfinishedObjectsTracker.service.ProjectService;
 import UnfinishedObjectsTracker.service.UserService;
-import com.zaxxer.hikari.metrics.PoolStats;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,11 +22,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
-import javax.websocket.server.PathParam;
-import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -48,6 +50,12 @@ public class ProjectController {
     @Autowired
     private PostDao postDao;
 
+    @Autowired
+    private ImageService imageService;
+
+    @Autowired
+    private ImageDao imageDao;
+
     private Logger log = Logger.getLogger(ProjectController.class.getName());
 
 
@@ -59,19 +67,30 @@ public class ProjectController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = userService.findUserByEmail(auth.getName());
         ArrayList<Project> userProjects = projectDao.listProjectsByUser(user.getId());
+        for (Project p: userProjects) {
+        ArrayList<Image> userImages = imageDao.listImagesByProjectId(p.getId());
+        // bundle in an if statement to make sure that there is something in this array, otherwise don't set it
+        if (!userImages.isEmpty()) {
+            Image i = userImages.get(0);
+            String base64EncodedImage = Base64.encodeBase64String(i.getData());
+            p.setImageString("data:image/jpeg;base64," + base64EncodedImage);
+        }
+        };
+
         modelAndView.addObject("title",  "UFO Home");
         modelAndView.addObject("WelcomeMessage", "Welcome " + user.getUsername() + "!");
         if (userProjects.size()== 0) {
             modelAndView.addObject("NoProjects", "No current projects.  " +
                     "Would you like to create a project?");
         }
-        //format local date to thymleaf readable date
+        //format local date to thymeleaf readable date
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
         for(Project p: userProjects) {
             LocalDateTime date = p.getCreationDate();
             p.setDate(date.format(formatter));
         }
         //add objects to modelAndView
+        modelAndView.addObject("WelcomeMessage",  user.getUsername() + "'s Projects");
         modelAndView.addObject("userProjects", userProjects);
         modelAndView.setViewName("project/home");
         return modelAndView;
@@ -80,17 +99,19 @@ public class ProjectController {
     @RequestMapping(value="/new", method= RequestMethod.GET)
     public ModelAndView displayCreateProject(){
         ModelAndView modelAndView = new ModelAndView();
-        //create new project object
+        //create new project object & image object
         Project project = new Project();
+        Image image = new Image();
         //add objects to modelAndView
         modelAndView.addObject("project", project);
-        modelAndView.addObject("title", "Create New Project");
+        modelAndView.addObject("image", image);
         modelAndView.setViewName("project/new");
         return modelAndView;
     }
 
     @RequestMapping(value="/new", method = RequestMethod.POST)
-    public ModelAndView submitNewProject(@Valid Project newProject, BindingResult bindingResult) {
+    public ModelAndView submitNewProject(@Valid Project newProject, BindingResult bindingResult,
+                                         @RequestParam(value ="file") MultipartFile file) {
         ModelAndView modelAndView = new ModelAndView();
         //this should retrieve the currently logged in user
         //user details contains everything but the Id for the user
@@ -101,24 +122,46 @@ public class ProjectController {
         User u = userService.findUserByEmail(userDetails.getUsername());
         int thisUser = u.getId();
         if (bindingResult.hasErrors()) {
+            modelAndView.addObject("title", "Create New Project");
             modelAndView.setViewName("project/new");
         } else{
             //this is just rough checking to ensure we have a user to save this project to
             if(thisUser != 0) {
+                //save project
                 Project thisProject = projectDao.save(newProject);
                 System.out.println("this is the project id " + thisProject.getId());
                 projectDao.createNewProject(thisUser,thisProject.getId());
+                //save project image
+                log.info("Some image: " + file );
+                Image thisImage = imageService.storeFile((MultipartFile) file);
+                imageDao.createNewTitleImage(thisImage.getId(), thisProject.getId());
+//                String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+//                        .path("/downloadFile/")
+//                        .path(thisImage.getId())
+//                        .toUriString();
 
                 //project listing
                 Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-                ArrayList<Project> userProjects = updateDate(auth);
+                User user = userService.findUserByEmail(auth.getName());
+                ArrayList<Project> userProjects = projectDao.listProjectsByUser(user.getId());
+                for (Project p: userProjects) {
+                    ArrayList<Image> userImages = imageDao.listImagesByProjectId(p.getId());
+                    // bundle in an if statement to make sure that there is something in this array, otherwise don't set it
+                    if (!userImages.isEmpty()) {
+                        Image i = userImages.get(0);
+                        String base64EncodedImage = Base64.encodeBase64String(i.getData());
+                        p.setImageString("data:image/jpeg;base64," + base64EncodedImage);
+                    }
+                };
+
                 //add objects to modelAndView
                 String username= userService.findUserByEmail(auth.getName()).getUsername();
                 modelAndView.addObject("project", new Project());
+                modelAndView.addObject("title",  "UFO Home");
                 modelAndView.addObject("WelcomeMessage",  username + "'s Projects");
                 modelAndView.addObject("userProjects", userProjects);
-                //modelAndView.addObject("userProjects", projectDao.listProjectsByUser(user.getId()));
                 modelAndView.setViewName("project/home");
+
             } else {
                 System.out.println("No user found so going to new again");
                 modelAndView.setViewName("project/new");
@@ -164,6 +207,7 @@ public class ProjectController {
         ArrayList<Project> userProjects = updateDate(auth);
         String username= userService.findUserByEmail(auth.getName()).getUsername();
         //add objects to modelAndView
+        modelAndView.addObject("title",  "UFO Home");
         modelAndView.addObject("WelcomeMessage",  username + "'s Projects");
         modelAndView.addObject("userProjects", userProjects);
         modelAndView.setViewName("project/home");
@@ -191,6 +235,7 @@ public class ProjectController {
         ArrayList<Project> userProjects = updateDate(auth);
         String username= userService.findUserByEmail(auth.getName()).getUsername();
         //add objects to modelAndView
+        modelAndView.addObject("title",  "UFO Home");
         modelAndView.addObject("WelcomeMessage", username  + "'s Projects");
         modelAndView.addObject("userProjects", userProjects);
         modelAndView.setViewName("project/home");
