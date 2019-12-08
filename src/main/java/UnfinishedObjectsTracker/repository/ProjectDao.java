@@ -43,7 +43,7 @@ public interface ProjectDao extends JpaRepository<Project, Long> {
     @Transactional
     @Query(value="UPDATE project SET project.title = :title,  project.description = :description WHERE project.project_id = :id", nativeQuery =true)
     @Modifying(clearAutomatically = true)
-    int updateProject(@Param("id") int id, @Param("title")String title, @Param("description")String description);
+    int updateProjectDatabase(@Param("id") int id, @Param("title")String title, @Param("description")String description);
 
     /*
      * Updates a the project tracker

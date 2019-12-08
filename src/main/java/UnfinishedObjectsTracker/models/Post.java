@@ -39,6 +39,15 @@ public class Post {
     @Column(name="project_id")
     private int projectId;
 
+    @Transient
+    private String imageString;
+
+    @Transient
+    private Image image;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "post_images", joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "image_id"))
+    private Set<Image> images;
+
     public Post(){
     }
 
@@ -96,5 +105,21 @@ public class Post {
 
     public void setProjectId(int projectId) {
         this.projectId = projectId;
+    }
+
+    public String getImageString() {
+        return imageString;
+    }
+
+    public void setImageString(String imageString) {
+        this.imageString = imageString;
+    }
+
+    public Image getImage() {
+        return image;
+    }
+
+    public void setImage(Image image) {
+        this.image = image;
     }
 }

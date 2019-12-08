@@ -61,7 +61,8 @@
     </div>
     <div class="row">
         <div class="col-md-4">
-            <img th:src="@{/img/yarn.jpg}" alt="yarn" class="img-thumbnail" max-width="100%">
+            <img th:attr="src=@{${(post.imageString != null && !#strings.isEmpty(post.imageString) ?
+            post.imageString : '/img/yarn.jpg') }}" alt="project_photo" class="img-thumbnail" max-width="100%">
         </div>
     </div>
     <div class="row">

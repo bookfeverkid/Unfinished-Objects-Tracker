@@ -23,9 +23,16 @@
 
 
 <div><h1 th:text="${project.title}"></h1></div>
+<img th:attr="src=@{${(project.imageString != null && !#strings.isEmpty(project.imageString) ?
+            project.imageString : '/img/yarn.jpg') }}" alt="project_photo" class="img-thumbnail" max-width="100%" />
 <div><p th:text="${project.description}"></p></div>
 <div><p th:text="${project.date}"></p></div>
-<div><p th:text="${project.percentComplete}"></p></div>
+<div class="progress">
+    <div id=progressDiv class="progress-bar progress-bar-success progress-bar-striped" role="progressbar"
+         aria-valuemin="0" aria-valuemax="100" th:attr="aria-valuenow=${project.percentComplete}"
+         th:style="'width:'+ ${project.percentComplete}+'%;'" th:text="${project.percentComplete} +'%'">
+    </div>
+</div>
 <!--<div><a th:href="@{/edit/{id}(id=${project.id})}">Edit</a> | <a th:href="@{/delete/{id}(id=${project.id})}"> Delete</a></div>-->
 
 

@@ -25,8 +25,8 @@
         <div class="col-md-6 col-md-offset-3">
             <form autocomplete="off" action="#" th:action="@{/addpost}"
                   th:object="${post}" method="post" class="form-horizontal"
-                  role="form">
-                <h2>Create a New Project</h2>
+                  role="form" enctype="multipart/form-data">
+                <h2>Create a New Post</h2>
                 <div class="form-group">
                     <div class="col-sm-9">
                         <label th:if="${#fields.hasErrors('title')}" th:errors="*{title}"
@@ -42,6 +42,14 @@
                                class="validation-message"></label>
                         <textarea type="text" th:field="*{description}" placeholder="Project Description"
                                   class="form-control"></textarea>
+                    </div>
+                </div>
+
+                <div class="upload-content">
+                    <div class="single-upload" id="singleUploadForm" name="singleUploadForm">
+                        <h3>Upload Post Image</h3>
+                        <input id="singleFileUploadInput" multiple="true" type="file" name="file" class="file-input"
+                               accept="image/x-png,image/jpeg,image/jpg"/>
                     </div>
                 </div>
 

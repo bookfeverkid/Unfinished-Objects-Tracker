@@ -61,34 +61,19 @@ public class ProjectController {
 
 
     @RequestMapping(value="/home", method = RequestMethod.GET)
-    public ModelAndView home(){
+    public ModelAndView home() {
         ModelAndView modelAndView = new ModelAndView();
 
-        //project listing
+        //project listing for homepage
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = userService.findUserByEmail(auth.getName());
-        ArrayList<Project> userProjects = projectDao.listProjectsByUser(user.getId());
-        for (Project p: userProjects) {
-        ArrayList<Image> userImages = imageDao.listImagesByProjectId(p.getId());
-        // bundle in an if statement to make sure that there is something in this array, otherwise don't set it
-        if (!userImages.isEmpty()) {
-            Image i = userImages.get(0);
-            String base64EncodedImage = Base64.encodeBase64String(i.getData());
-            p.setImageString("data:image/jpeg;base64," + base64EncodedImage);
-        }
-        }
+        ArrayList<Project> userProjects = updateProject(auth);
 
         modelAndView.addObject("title",  "UFO Home");
         modelAndView.addObject("WelcomeMessage", "Welcome " + user.getUsername() + "!");
         if (userProjects.size()== 0) {
             modelAndView.addObject("NoProjects", "No current projects.  " +
                     "Would you like to create a project?");
-        }
-        //format local date to thymeleaf readable date
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
-        for(Project p: userProjects) {
-            LocalDateTime date = p.getCreationDate();
-            p.setDate(date.format(formatter));
         }
         //add objects to modelAndView
         modelAndView.addObject("WelcomeMessage",  user.getUsername() + "'s Projects");
@@ -130,34 +115,17 @@ public class ProjectController {
             if(thisUser != 0) {
                 //save project
                 Project thisProject = projectDao.save(newProject);
-                System.out.println("this is the project id " + thisProject.getId());
                 projectDao.createNewProject(thisUser,thisProject.getId());
                 //save project image
-                log.info("Some image: " + file );
-                Image thisImage = imageService.storeFile((MultipartFile) file);
-                imageDao.createNewTitleImage(thisImage.getId(), thisProject.getId());
-//                String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-//                        .path("/downloadFile/")
-//                        .path(thisImage.getId())
-//                        .toUriString();
+                if (!file.isEmpty()){
+                    Image thisImage = imageService.storeFile((MultipartFile) file);
+                    imageDao.createNewTitleImage(thisImage.getId(), thisProject.getId());
+                }
 
-                //project listing
+                //project listing for homepage
                 Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 User user = userService.findUserByEmail(auth.getName());
-                ArrayList<Project> userProjects = projectDao.listProjectsByUser(user.getId());
-                for (Project p: userProjects) {
-                    ArrayList<Image> userImages = imageDao.listImagesByProjectId(p.getId());
-                    // bundle in an if statement to make sure that there is something in this array, otherwise don't set it
-                    if (userImages.isEmpty()){
-
-                    }
-                    if (!userImages.isEmpty()) {
-                        Image i = userImages.get(0);
-                        String base64EncodedImage = Base64.encodeBase64String(i.getData());
-                        p.setImageString("data:image/jpeg;base64," + base64EncodedImage);
-                    }
-                    // add a check to display default pic if no image uploaded
-                }
+                ArrayList<Project> userProjects = updateProject(auth);
 
                 //add objects to modelAndView
                 String username= userService.findUserByEmail(auth.getName()).getUsername();
@@ -182,14 +150,13 @@ public class ProjectController {
         Project thisProject = projectDao.findById(id);
         LocalDateTime date = thisProject.getCreationDate();
         thisProject.setDate(date.format(formatter));
-        ArrayList<Image> thisImage = imageDao.listImagesByProjectId(thisProject.getId());
-        log.info("view image" + thisImage);
-        if (!thisImage.isEmpty()) {
-            Image i = thisImage.get(0);
+        ArrayList<Image> titleImage = imageDao.listImagesByProjectId(thisProject.getId());
+        if (!titleImage.isEmpty()) {
+            Image i = titleImage.get(0);
             String base64EncodedImage = Base64.encodeBase64String(i.getData());
             thisProject.setImageString("data:image/jpeg;base64," + base64EncodedImage);
         }
-        ArrayList<Post> thesePosts = updatePostDate(thisProject);
+        ArrayList<Post> thesePosts = updatePost(thisProject);
 
         //add objects to modelAndView
         modelAndView.addObject("project", thisProject);
@@ -201,7 +168,18 @@ public class ProjectController {
     @RequestMapping(value="/edit/{id}", method = RequestMethod.GET)
     public ModelAndView displayEditProject(@PathVariable("id") int id){
         ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("project", projectDao.findById(id));
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
+        Project thisProject = projectDao.findById(id);
+        LocalDateTime date = thisProject.getCreationDate();
+        thisProject.setDate(date.format(formatter));
+        ArrayList<Image> titleImage = imageDao.listImagesByProjectId(thisProject.getId());
+        if (!titleImage.isEmpty()) {
+            Image i = titleImage.get(0);
+            String base64EncodedImage = Base64.encodeBase64String(i.getData());
+            thisProject.setImageString("data:image/jpeg;base64," + base64EncodedImage);
+        }
+        modelAndView.addObject("project", thisProject);
         //add objects to modelAndView
         modelAndView.setViewName("project/edit");
         return modelAndView;
@@ -210,24 +188,13 @@ public class ProjectController {
     @RequestMapping(value="/edit/{id}", method = RequestMethod.POST)
     public ModelAndView processEditProject(@Valid Project project, BindingResult bindingResult) {
         ModelAndView modelAndView = new ModelAndView();
-        //Confirm Delete
 
-        //Edit project feature
-        int i = projectDao.updateProject(project.getId(), project.getTitle(), project.getDescription());
+        //Edit project
+        int i = projectDao.updateProjectDatabase(project.getId(), project.getTitle(), project.getDescription());
 
         //project listing for homepage
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = userService.findUserByEmail(auth.getName());
-        ArrayList<Project> userProjects = projectDao.listProjectsByUser(user.getId());
-        for (Project p: userProjects) {
-            ArrayList<Image> userImages = imageDao.listImagesByProjectId(p.getId());
-            // bundle in an if statement to make sure that there is something in this array, otherwise don't set it
-            if (!userImages.isEmpty()) {
-                Image img = userImages.get(0);
-                String base64EncodedImage = Base64.encodeBase64String(img.getData());
-                p.setImageString("data:image/jpeg;base64," + base64EncodedImage);
-            }
-        }
+        ArrayList<Project> userProjects = updateProject(auth);
         String username= userService.findUserByEmail(auth.getName()).getUsername();
         //add objects to modelAndView
         modelAndView.addObject("title",  "UFO Home");
@@ -242,8 +209,18 @@ public class ProjectController {
     public ModelAndView displayDeleteProject(@PathVariable("id") int id){
         ModelAndView modelAndView = new ModelAndView();
         //add objects to modelAndView
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
+        Project thisProject = projectDao.findById(id);
+        LocalDateTime date = thisProject.getCreationDate();
+        thisProject.setDate(date.format(formatter));
+        ArrayList<Image> titleImage = imageDao.listImagesByProjectId(thisProject.getId());
+        if (!titleImage.isEmpty()) {
+            Image i = titleImage.get(0);
+            String base64EncodedImage = Base64.encodeBase64String(i.getData());
+            thisProject.setImageString("data:image/jpeg;base64," + base64EncodedImage);
+        }
         modelAndView.addObject("Message", "Are you sure you want to delete this project?");
-        modelAndView.addObject("project", projectDao.findById(id));
+        modelAndView.addObject("project", thisProject);
         modelAndView.setViewName("project/delete");
         return modelAndView;
     }
@@ -252,22 +229,23 @@ public class ProjectController {
         ModelAndView modelAndView = new ModelAndView();
 
         //Delete Project
-        int z =postDao.deletePost(project.getId());
-        int i =projectDao.deleteProject(project.getId());
+        try {
+            int j = imageDao.deletePostImage(project.getId());
+            int f = imageDao.deleteProjectTitleImage(project.getId());
+            int z =postDao.deletePost(project.getId());
+            int i =projectDao.deleteProject(project.getId());
+        }
+        catch(Exception e){
+            log.info("e" + e);
+        }
 
-        //project listing
+
+
+
+
+        //project listing for homepage
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = userService.findUserByEmail(auth.getName());
-        ArrayList<Project> userProjects = projectDao.listProjectsByUser(user.getId());
-        for (Project p: userProjects) {
-            ArrayList<Image> userImages = imageDao.listImagesByProjectId(p.getId());
-            // bundle in an if statement to make sure that there is something in this array, otherwise don't set it
-            if (!userImages.isEmpty()) {
-                Image img = userImages.get(0);
-                String base64EncodedImage = Base64.encodeBase64String(img.getData());
-                p.setImageString("data:image/jpeg;base64," + base64EncodedImage);
-            }
-        };
+        ArrayList<Project> userProjects = updateProject(auth);
         String username= userService.findUserByEmail(auth.getName()).getUsername();
         //add objects to modelAndView
         modelAndView.addObject("title",  "UFO Home");
@@ -285,37 +263,49 @@ public class ProjectController {
         //create new project object
         Post post = new Post();
         post.setProjectId(id);
+        Image image = new Image();
         //add objects to modelAndView
         Project project =projectDao.findById(post.getProjectId());
+        log.info("project" + project);
+        log.info("image " + image);
         modelAndView.addObject("post", post);
         modelAndView.addObject("project", project);
+        modelAndView.addObject("image", image);
         modelAndView.addObject("title", "Add New Post to Project");
         modelAndView.setViewName("project/addpost");
         return modelAndView;
     }
 
     @RequestMapping(value="/addpost", method = RequestMethod.POST)
-    public ModelAndView processAddPost(@Valid Post newPost, @Valid Project project){
+    public ModelAndView processAddPost(@Valid Post newPost, @Valid Project project,
+                                       @RequestParam(value ="file") MultipartFile file){
         ModelAndView modelAndView = new ModelAndView();
 
         //save new post to database
         Post thisPost = postDao.save(newPost);
+        log.info("new post  " + thisPost);
         projectDao.updateProjectProgress(project.getId(), project.getPercentComplete());
+        if (!file.isEmpty()){
+            Image thisImage = imageService.storeFile((MultipartFile) file);
+            imageDao.createNewPostImage(thisImage.getId(), thisPost.getId());
+        }
 
         //load Project page with new post
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
-        Project thisProject = projectDao.findById(thisPost.getProjectId());
-        ////update project progress tracker??
-        ///How can I do this here?
-        LocalDateTime date = thisProject.getCreationDate();
-        thisProject.setDate(date.format(formatter));
-        ArrayList<Post> thesePosts = updatePostDate(thisProject);
-
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
+//        Project thisProject = projectDao.findById(thisPost.getProjectId());
+//        LocalDateTime date = thisProject.getCreationDate();
+//        thisProject.setDate(date.format(formatter));
+//        ArrayList<Image> titleImage = imageDao.listImagesByProjectId(thisProject.getId());
+//        if (!titleImage.isEmpty()) {
+//            Image i = titleImage.get(0);
+//            String base64EncodedImage = Base64.encodeBase64String(i.getData());
+//            thisProject.setImageString("data:image/jpeg;base64," + base64EncodedImage);
+//        }
+        Project thisProject = displayProject(thisPost);
+        ArrayList<Post> thesePosts = updatePost(thisProject);
         //add objects to modelAndView
         modelAndView.addObject("project", thisProject);
         modelAndView.addObject("post", thesePosts);
-        modelAndView.addObject("title", "Would you like to Edit your project's progress?");
         modelAndView.setViewName("project/viewproject");
         return modelAndView;
     }
@@ -335,41 +325,66 @@ public class ProjectController {
         //Edit individual post feature
         int i = postDao.updatePost(post.getId(), post.getTitle(), post.getDescription());
         //log.info(post.getProjectId());
-        //view project  listing
-        log.info("something" + i);
-        log.info("p" +post.getProjectId());
+        //load Project page with new post
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
         Project thisProject = projectDao.findById(post.getProjectId());
-        log.info(thisProject.getTitle());
-        ArrayList<Post> somePosts = updatePostDate(thisProject);
+        log.info("this post" + thisProject);
+        LocalDateTime date = thisProject.getCreationDate();
+        thisProject.setDate(date.format(formatter));
+        ArrayList<Post> thesePosts = updatePost(thisProject);
 
         //add objects to modelAndView
         modelAndView.addObject("project", thisProject);
-        modelAndView.addObject("post", somePosts);
+        modelAndView.addObject("post", thesePosts);
         modelAndView.setViewName("project/viewproject");
         return modelAndView;
     }
 
-    public ArrayList<Project> updateDate(Authentication auth) {
+    public ArrayList<Project> updateProject(Authentication auth) {
         User user = userService.findUserByEmail(auth.getName());
         ArrayList<Project> userProjects = projectDao.listProjectsByUser(user.getId());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
         for(Project p: userProjects) {
             LocalDateTime date = p.getCreationDate();
             p.setDate(date.format(formatter));
+            ArrayList<Image> thisImage = imageDao.listImagesByProjectId(p.getId());
+            if (!thisImage.isEmpty()) {
+                Image i = thisImage.get(0);
+                String base64EncodedImage = Base64.encodeBase64String(i.getData());
+                p.setImageString("data:image/jpeg;base64," + base64EncodedImage);
+            }
         }
         return userProjects;
     }
 
-    public ArrayList<Post> updatePostDate(Project thisProject) {
+    public ArrayList<Post> updatePost(Project thisProject) {
         Project project = projectService.findById(thisProject.getId());
         ArrayList<Post> post = postDao.listPostsByProjectId(project.getId());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
         for(Post p: post) {
             LocalDateTime date = p.getPostDate();
             p.setpDate(date.format(formatter));
+            ArrayList<Image> userImages = imageDao.listImagesByPostId(p.getId());
+            // bundle in an if statement to make sure that there is something in this array, otherwise don't set it
+            if (!userImages.isEmpty()) {
+                Image img = userImages.get(0);
+                String base64EncodedImage = Base64.encodeBase64String(img.getData());
+                p.setImageString("data:image/jpeg;base64," + base64EncodedImage);
+            }
         }
         return post;
     }
-
+    public Project displayProject(Post thisPost){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
+        Project thisProject = projectDao.findById(thisPost.getProjectId());
+        LocalDateTime date = thisProject.getCreationDate();
+        thisProject.setDate(date.format(formatter));
+        ArrayList<Image> titleImage = imageDao.listImagesByProjectId(thisProject.getId());
+        if (!titleImage.isEmpty()) {
+            Image i = titleImage.get(0);
+            String base64EncodedImage = Base64.encodeBase64String(i.getData());
+            thisProject.setImageString("data:image/jpeg;base64," + base64EncodedImage);
+        }
+        return thisProject;
+    }
 }

@@ -29,7 +29,7 @@
     <div class="row">
         <div class="col-md-3" th:each="project : ${userProjects}">
             <img th:attr="src=@{${(project.imageString != null && !#strings.isEmpty(project.imageString) ?
-            project.imageString : '/img/yarn.jpg') }}" alt="project_photo" class="img-thumbnail" max-width="100%">
+            project.imageString : '/img/yarn.jpg') }}" alt="project_photo" class="img-thumbnail" max-width="100%" />
 
 <!--            <th:block th:each="image : ${project.image}">-->
 <!--                <th:block th:text="${image.imageName}">New Image</th:block>-->
@@ -41,8 +41,7 @@
 <!--            <img th:src="@{/img/yarn.jpg}" alt="yarn" class="img-thumbnail" max-width="100%">-->
                 <h3 th:text="${project.title}"></h3>
 
-            <div th:text="${project.date}">
-            </div>
+            <p>Last Edited:  <div th:text="${project.date}"></div></p>
             <div class="progress">
                 <div id=progressDiv class="progress-bar progress-bar-success progress-bar-striped" role="progressbar"
                      aria-valuemin="0" aria-valuemax="100" th:attr="aria-valuenow=${project.percentComplete}"

@@ -15,6 +15,7 @@ import javax.validation.constraints.Size;
 //import java.time.LocalDate;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "project")
@@ -52,6 +53,10 @@ public class Project {
 
     @Transient
     private Image image;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "project_images", joinColumns = @JoinColumn(name = "project_id"), inverseJoinColumns = @JoinColumn(name = "image_id"))
+    private Set<Image> images;
 
     public Project(){
 

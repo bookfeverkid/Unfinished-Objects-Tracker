@@ -22,16 +22,53 @@ public interface ImageDao extends JpaRepository<Image, String> {
 //    Image findByProjectId(int id);
 
     @Transactional
-    @Query(value = "INSERT into projectImages (image_id, project_id) VALUES ( :imageId, :projectId)", nativeQuery = true)
+    @Query(value = "INSERT into project_images (image_id, project_id) VALUES ( :imageId, :projectId)", nativeQuery = true)
     @Modifying
     void createNewTitleImage(@Param("imageId") int imageId, @Param("projectId") int projectId);
 
 
+    @Transactional
+    @Query(value = "INSERT into post_images (image_id, post_id) VALUES ( :imageId, :postId)", nativeQuery = true)
+    @Modifying
+    void createNewPostImage(@Param("imageId") int imageId, @Param("postId") int postId);
+
     @Query(value="SELECT * " +
             "FROM image " +
-            "INNER JOIN projectimages ON(image.id = projectimages.image_id) " +
-            "INNER JOIN project ON(projectimages.project_id = project.project_id) " +
+            "INNER JOIN project_images ON(image.id = project_images.image_id) " +
+            "INNER JOIN project ON(project_images.project_id = project.project_id) " +
             "WHERE project.project_id =:projectId", nativeQuery = true)
     ArrayList<Image> listImagesByProjectId(@Param("projectId") int projectId);
 
+    @Query(value="SELECT * " +
+            "FROM image " +
+            "INNER JOIN post_images ON(image.id = post_images.image_id) " +
+            "INNER JOIN post ON(post_images.post_id = post.post_id) " +
+            "WHERE post.post_id =:postId", nativeQuery = true)
+    ArrayList<Image> listImagesByPostId(@Param("postId") int postId);
+
+    @Transactional
+    @Modifying
+    @Query(value ="DELETE image, project_images, post_images " +
+            "FROM image " +
+            "INNER JOIN  project_images ON(image.id = project_images.image_id) " +
+            "INNER JOIN  post_images ON(image.id = post_images.image_id) " +
+            "WHERE project_images.project_id = :id", nativeQuery = true)
+    int deleteProjectImage(@Param("id") int id);
+
+
+    @Transactional
+    @Modifying
+    @Query(value ="DELETE image, project_images FROM image "+
+            "INNER JOIN project_images ON (project_images.image_id = image.id) " +
+            "WHERE project_images.project_id = :id", nativeQuery = true)
+    int deleteProjectTitleImage(@Param("id") int id);
+
+
+    @Transactional
+    @Modifying
+    @Query(value ="DELETE image, post_images FROM image " +
+            "INNER JOIN post_images ON (post_images.image_id = image.id) " +
+            "INNER JOIN post ON (post_images.post_id = post.post_id) " +
+            "WHERE post.project_id = :id", nativeQuery = true)
+    int deletePostImage(@Param("id") int id);
 }
